@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyLingo - Python 学习平台</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Lucide Icons as inline SVG components
+        const Trophy = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+        );
+
+        const Flame = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+            </svg>
+        );
+
+        const RotateCcw = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+            </svg>
+        );
+
+        const Lightbulb = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
+                <path d="M9 18h6"></path>
+                <path d="M10 22h4"></path>
+            </svg>
+        );
+
+        const CheckCircle = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        );
+
+        const Lock = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+        );
+
+        const Circle = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+        );
+
+        const PyLingo = () => {
+          const [currentLevel, setCurrentLevel] = useState(0);
+          const [userCode, setUserCode] = useState('');
+          const [showHint, setShowHint] = useState(false);
+          const [feedback, setFeedback] = useState(null);
+          const [completedLevels, setCompletedLevels] = useState([]);
+          const [streak, setStreak] = useState(0);
+
+          const levels = [
+            {
+              id: 0,
+              title: "Hello World",
+              description: "Start your Python journey with the classic first program.",
+              context: "The print() function displays text to the console. This is the foundation of all programming!",
+              task: "Write a program that prints 'Hello, World!' to the console.",
+              expectedOutput: "Hello, World!",
+              hint: "Use print() with the text inside quotes: print('Hello, World!')",
+              starterCode: "# Write your code here\n",
+              solution: "print('Hello, World!')"
+            },
+            {
+              id: 1,
+              title: "Variables & Types",
+              description: "Learn to store and manipulate data with variables.",
+              context: "Variables are containers for storing data. Python automatically determines the type based on the value assigned.",
+              task: "Create a variable named 'name' with your name, then print it.",
+              expectedOutput: /^[A-Za-z]+$/,
+              hint: "name = 'YourName'\nprint(name)",
+              starterCode: "# Create a variable and print it\n",
+              solution: "name = 'Python'\nprint(name)",
+              customValidator: (code) => {
+                return code.includes('name') && code.includes('=') && code.includes('print');
+              }
+            },
+            {
+              id: 2,
+              title: "Basic Math",
+              description: "Perform calculations using Python as a calculator.",
+              context: "Python supports all basic arithmetic operations: +, -, *, /, and more.",
+              task: "Calculate and print the result of 25 + 17.",
+              expectedOutput: "42",
+              hint: "Use print() with the calculation: print(25 + 17)",
+              starterCode: "# Calculate and print the sum\n",
+              solution: "print(25 + 17)"
+            },
+            {
+              id: 3,
+              title: "String Concatenation",
+              description: "Combine text strings together.",
+              context: "Strings can be joined using the + operator, creating longer text from smaller pieces.",
+              task: "Print 'Python' + 'Programming' together (no space between).",
+              expectedOutput: "PythonProgramming",
+              hint: "print('Python' + 'Programming')",
+              starterCode: "# Combine and print strings\n",
+              solution: "print('Python' + 'Programming')"
+            },
+            {
+              id: 4,
+              title: "String Formatting",
+              description: "Create formatted strings with variables.",
+              context: "F-strings (formatted string literals) allow you to embed expressions inside strings using curly braces {}.",
+              task: "Create a variable age = 25, then print 'I am 25 years old' using an f-string.",
+              expectedOutput: "I am 25 years old",
+              hint: "age = 25\nprint(f'I am {age} years old')",
+              starterCode: "# Use f-string formatting\n",
+              solution: "age = 25\nprint(f'I am {age} years old')"
+            },
+            {
+              id: 5,
+              title: "Lists - Part 1",
+              description: "Store multiple items in a single variable.",
+              context: "Lists are ordered collections that can hold multiple values. They're created using square brackets [].",
+              task: "Create a list with three fruits: 'apple', 'banana', 'orange' and print it.",
+              expectedOutput: "['apple', 'banana', 'orange']",
+              hint: "fruits = ['apple', 'banana', 'orange']\nprint(fruits)",
+              starterCode: "# Create and print a list\n",
+              solution: "fruits = ['apple', 'banana', 'orange']\nprint(fruits)"
+            },
+            {
+              id: 6,
+              title: "List Access",
+              description: "Access individual elements from a list.",
+              context: "List items can be accessed using their index position. Python uses zero-based indexing (first item is at index 0).",
+              task: "Given colors = ['red', 'green', 'blue'], print the first item.",
+              expectedOutput: "red",
+              hint: "colors = ['red', 'green', 'blue']\nprint(colors[0])",
+              starterCode: "colors = ['red', 'green', 'blue']\n# Print the first item\n",
+              solution: "colors = ['red', 'green', 'blue']\nprint(colors[0])"
+            },
+            {
+              id: 7,
+              title: "If Statements",
+              description: "Make decisions with conditional logic.",
+              context: "If statements allow your program to execute code only when certain conditions are met.",
+              task: "Create x = 10, then print 'Greater' if x > 5, using an if statement.",
+              expectedOutput: "Greater",
+              hint: "x = 10\nif x > 5:\n    print('Greater')",
+              starterCode: "# Write an if statement\n",
+              solution: "x = 10\nif x > 5:\n    print('Greater')"
+            },
+            {
+              id: 8,
+              title: "If-Else",
+              description: "Handle both true and false conditions.",
+              context: "Else clauses provide an alternative action when the if condition is false.",
+              task: "Create x = 3, print 'Big' if x > 5, else print 'Small'.",
+              expectedOutput: "Small",
+              hint: "x = 3\nif x > 5:\n    print('Big')\nelse:\n    print('Small')",
+              starterCode: "# Write if-else statement\n",
+              solution: "x = 3\nif x > 5:\n    print('Big')\nelse:\n    print('Small')"
+            },
+            {
+              id: 9,
+              title: "For Loops",
+              description: "Repeat actions multiple times.",
+              context: "For loops iterate over sequences, executing code for each item.",
+              task: "Print numbers 0 through 4 using a for loop with range(5).",
+              expectedOutput: "0\n1\n2\n3\n4",
+              hint: "for i in range(5):\n    print(i)",
+              starterCode: "# Write a for loop\n",
+              solution: "for i in range(5):\n    print(i)"
+            },
+            {
+              id: 10,
+              title: "While Loops",
+              description: "Repeat while a condition is true.",
+              context: "While loops continue executing as long as their condition remains true.",
+              task: "Print numbers 1, 2, 3 using a while loop. Start with x = 1.",
+              expectedOutput: "1\n2\n3",
+              hint: "x = 1\nwhile x <= 3:\n    print(x)\n    x += 1",
+              starterCode: "# Write a while loop\n",
+              solution: "x = 1\nwhile x <= 3:\n    print(x)\n    x += 1"
+            },
+            {
+              id: 11,
+              title: "Functions - Basics",
+              description: "Create reusable blocks of code.",
+              context: "Functions are defined with 'def' and can be called multiple times.",
+              task: "Define a function called greet() that prints 'Hello!' then call it.",
+              expectedOutput: "Hello!",
+              hint: "def greet():\n    print('Hello!')\ngreet()",
+              starterCode: "# Define and call a function\n",
+              solution: "def greet():\n    print('Hello!')\ngreet()"
+            },
+            {
+              id: 12,
+              title: "Functions - Parameters",
+              description: "Pass data into functions.",
+              context: "Functions can accept parameters (inputs) to work with different data.",
+              task: "Define greet(name) that prints 'Hello, [name]!', then call it with 'Python'.",
+              expectedOutput: "Hello, Python!",
+              hint: "def greet(name):\n    print(f'Hello, {name}!')\ngreet('Python')",
+              starterCode: "# Define function with parameter\n",
+              solution: "def greet(name):\n    print(f'Hello, {name}!')\ngreet('Python')"
+            },
+            {
+              id: 13,
+              title: "Functions - Return",
+              description: "Return values from functions.",
+              context: "The return statement sends a value back to where the function was called.",
+              task: "Define add(a, b) that returns a + b, then print add(5, 3).",
+              expectedOutput: "8",
+              hint: "def add(a, b):\n    return a + b\nprint(add(5, 3))",
+              starterCode: "# Define function with return\n",
+              solution: "def add(a, b):\n    return a + b\nprint(add(5, 3))"
+            },
+            {
+              id: 14,
+              title: "Dictionaries",
+              description: "Store data as key-value pairs.",
+              context: "Dictionaries map keys to values, allowing efficient data lookup by key.",
+              task: "Create person = {'name': 'Alice', 'age': 30} and print person['name'].",
+              expectedOutput: "Alice",
+              hint: "person = {'name': 'Alice', 'age': 30}\nprint(person['name'])",
+              starterCode: "# Create and access dictionary\n",
+              solution: "person = {'name': 'Alice', 'age': 30}\nprint(person['name'])"
+            }
+          ];
+
+          useEffect(() => {
+            setUserCode(levels[currentLevel].starterCode);
+            setFeedback(null);
+            setShowHint(false);
+          }, [currentLevel]);
+
+          const validateCode = (code, level) => {
+            const trimmedCode = code.trim();
+            
+            if (level.customValidator) {
+              return level.customValidator(trimmedCode);
+            }
+
+            if (level.expectedOutput instanceof RegExp) {
+              const match = trimmedCode.match(/print\(['"](.*)['"]\)/) || 
+                            trimmedCode.match(/print\((\w+)\)/);
+              return match && level.expectedOutput.test(match[1]);
+            }
+
+            const codeOutput = simulatePythonExecution(trimmedCode);
+            return codeOutput === level.expectedOutput;
+          };
+
+          const simulatePythonExecution = (code) => {
+            try {
+              const printMatch = code.match(/print\((.*)\)/s);
+              if (!printMatch) return null;
+
+              const content = printMatch[1];
+              
+              if (content.includes('+')) {
+                const parts = content.split('+').map(p => p.trim());
+                if (parts.every(p => /^\d+$/.test(p))) {
+                  return String(parts.reduce((sum, p) => sum + parseInt(p), 0));
+                }
+                if (parts.every(p => /^['"].*['"]$/.test(p))) {
+                  return parts.map(p => p.slice(1, -1)).join('');
+                }
+              }
+
+              if (content.startsWith('f') || content.startsWith('F')) {
+                const fstringMatch = content.match(/f['"](.*)['"]/);
+                if (fstringMatch) {
+                  let result = fstringMatch[1];
+                  const varMatches = result.match(/{([^}]+)}/g);
+                  if (varMatches) {
+                    varMatches.forEach(match => {
+                      const varName = match.slice(1, -1);
+                      const varMatch = code.match(new RegExp(`${varName}\\s*=\\s*(\\d+)`));
+                      if (varMatch) {
+                        result = result.replace(match, varMatch[1]);
+                      }
+                    });
+                  }
+                  return result;
+                }
+              }
+
+              if (/^['"].*['"]$/.test(content)) {
+                return content.slice(1, -1);
+              }
+
+              if (/^\[.*\]$/.test(content)) {
+                return content;
+              }
+
+              if (/^\w+\[\d+\]$/.test(content)) {
+                const listMatch = code.match(/(\w+)\s*=\s*(\[.*\])/);
+                const accessMatch = content.match(/\w+\[(\d+)\]/);
+                if (listMatch && accessMatch) {
+                  const list = JSON.parse(listMatch[2].replace(/'/g, '"'));
+                  return list[parseInt(accessMatch[1])];
+                }
+              }
+
+              if (/^\w+$/.test(content)) {
+                const varMatch = code.match(new RegExp(`${content}\\s*=\\s*['"](.*)['"]`));
+                if (varMatch) return varMatch[1];
+              }
+
+              const rangeMatch = code.match(/for\s+\w+\s+in\s+range\((\d+)\):\s*print\((\w+)\)/s);
+              if (rangeMatch) {
+                const num = parseInt(rangeMatch[1]);
+                return Array.from({length: num}, (_, i) => i).join('\n');
+              }
+
+              const whileMatch = code.match(/while\s+\w+\s*<=\s*(\d+):/);
+              if (whileMatch) {
+                const lines = code.split('\n');
+                if (lines.some(l => l.includes('print('))) {
+                  return "1\n2\n3";
+                }
+              }
+
+              const funcMatch = code.match(/def\s+\w+\([^)]*\):/);
+              if (funcMatch) {
+                const callMatch = code.match(/print\((\w+\([^)]*\))\)/);
+                if (callMatch) {
+                  const addMatch = code.match(/return\s+a\s*\+\s*b/);
+                  const callArgsMatch = callMatch[1].match(/\((\d+),\s*(\d+)\)/);
+                  if (addMatch && callArgsMatch) {
+                    return String(parseInt(callArgsMatch[1]) + parseInt(callArgsMatch[2]));
+                  }
+                }
+                
+                const simpleCall = code.match(/(\w+)\(\)/);
+                if (simpleCall) {
+                  const funcName = simpleCall[1];
+                  const funcBody = code.match(new RegExp(`def\\s+${funcName}\\(\\):[\\s\\S]*?print\\(['"](.*?)['"]\\)`));
+                  if (funcBody) return funcBody[1];
+                }
+
+                const paramCall = code.match(/(\w+)\(['"](.*)['"](\))/);
+                if (paramCall) {
+                  return `Hello, ${paramCall[2]}!`;
+                }
+              }
+
+              const ifMatch = code.match(/if\s+\w+\s*>\s*\d+:\s*print\(['"](.*)['"]\)/s);
+              if (ifMatch) return ifMatch[1];
+
+              const ifElseMatch = code.match(/else:\s*print\(['"](.*)['"]\)/s);
+              if (ifElseMatch && code.includes('x = 3')) return ifElseMatch[1];
+
+              const dictMatch = code.match(/print\((\w+)\[['"](\w+)['"]\]\)/);
+              if (dictMatch) {
+                const dictDef = code.match(/\w+\s*=\s*{[^}]*['"]name['"]\s*:\s*['"](\w+)['"]/);
+                if (dictDef) return dictDef[1];
+              }
+
+            } catch (e) {
+              return null;
+            }
+            return null;
+          };
+
+          const handleSubmit = () => {
+            const level = levels[currentLevel];
+            const actualOutput = simulatePythonExecution(userCode.trim());
+            const isCorrect = validateCode(userCode, level);
+
+            if (isCorrect) {
+              setFeedback({ 
+                correct: true, 
+                message: "Excellent work! You've completed this level!",
+                actualOutput: actualOutput,
+                expectedOutput: level.expectedOutput instanceof RegExp ? 'Any name' : level.expectedOutput
+              });
+              if (!completedLevels.includes(currentLevel)) {
+                setCompletedLevels([...completedLevels, currentLevel]);
+                setStreak(streak + 1);
+              }
+            } else {
+              setFeedback({
+                correct: false,
+                message: "Not quite right. Here's what was expected:",
+                expected: level.solution,
+                explanation: level.context,
+                actualOutput: actualOutput,
+                expectedOutput: level.expectedOutput instanceof RegExp ? 'Any name' : level.expectedOutput
+              });
+              setStreak(0);
+            }
+          };
+
+          const handleReset = () => {
+            setUserCode(levels[currentLevel].starterCode);
+            setFeedback(null);
+            setShowHint(false);
+          };
+
+          const handleLevelChange = (levelId) => {
+            if (levelId === 0 || completedLevels.includes(levelId - 1)) {
+              setCurrentLevel(levelId);
+            }
+          };
+
+          const progressPercentage = (completedLevels.length / levels.length) * 100;
+
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+              {/* Header */}
+              <header className="bg-white shadow-md">
+                <div className="max-w-7xl mx-auto px-4 py-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-blue-600 text-white p-2 rounded-lg">
+                        <Trophy />
+                      </div>
+                      <h1 className="text-2xl font-bold text-gray-800">PyLingo</h1>
+                    </div>
+                    <div className="flex items-center space-x-6">
+                      <div className="flex items-center space-x-2 bg-orange-100 px-3 py-2 rounded-lg">
+                        <Flame />
+                        <span className="font-semibold text-orange-700">{streak} Streak</span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <span className="font-semibold text-blue-600">{completedLevels.length}</span> / {levels.length} Completed
+                      </div>
+                    </div>
+                  </div>
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full transition-all duration-500 ease-out"
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
+                </div>
+              </header>
+
+              <div className="max-w-7xl mx-auto px-4 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Main Content */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {/* Level Info Card */}
+                    <div className="bg-white rounded-xl shadow-lg p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                              Level {currentLevel + 1}
+                            </span>
+                            {completedLevels.includes(currentLevel) && (
+                              <CheckCircle />
+                            )}
+                          </div>
+                          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                            {levels[currentLevel].title}
+                          </h2>
+                          <p className="text-gray-600 mb-4">{levels[currentLevel].description}</p>
+                          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                            <p className="text-sm text-gray-700">{levels[currentLevel].context}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mt-4">
+                        <p className="font-semibold text-gray-800 mb-1">Task:</p>
+                        <p className="text-gray-700">{levels[currentLevel].task}</p>
+                      </div>
+                    </div>
+
+                    {/* Code Editor */}
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                      <div className="bg-gray-800 px-4 py-3 flex items-center justify-between">
+                        <span className="text-gray-300 text-sm font-semibold">Code Editor</span>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => setShowHint(!showHint)}
+                            className="flex items-center space-x-1 px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors text-sm"
+                          >
+                            <Lightbulb />
+                            <span>Hint</span>
+                          </button>
+                          <button
+                            onClick={handleReset}
+                            className="flex items-center space-x-1 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors text-sm"
+                          >
+                            <RotateCcw />
+                            <span>Reset</span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {showHint && (
+                        <div className="bg-yellow-100 border-b-2 border-yellow-300 p-4">
+                          <p className="text-sm font-semibold text-gray-700 mb-1">💡 Hint:</p>
+                          <pre className="text-sm text-gray-800 font-mono">{levels[currentLevel].hint}</pre>
+                        </div>
+                      )}
+
+                      <textarea
+                        value={userCode}
+                        onChange={(e) => setUserCode(e.target.value)}
+                        className="w-full p-4 bg-gray-900 text-green-400 font-mono text-sm focus:outline-none resize-none"
+                        rows="12"
+                        spellCheck="false"
+                      />
+
+                      <div className="p-4 bg-gray-50 border-t">
+                        <button
+                          onClick={handleSubmit}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
+                        >
+                          Run Code
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Feedback */}
+                    {feedback && (
+                      <div className={`rounded-xl shadow-lg p-6 ${
+                        feedback.correct ? 'bg-green-50 border-2 border-green-300' : 'bg-red-50 border-2 border-red-300'
+                      }`}>
+                        <p className={`font-bold text-lg mb-2 ${
+                          feedback.correct ? 'text-green-800' : 'text-red-800'
+                        }`}>
+                          {feedback.correct ? '✅ Correct!' : '❌ Incorrect'}
+                        </p>
+                        <p className="text-gray-700 mb-3">{feedback.message}</p>
+                        
+                        {/* Output Comparison */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="bg-white p-4 rounded-lg border-2 border-blue-300">
+                            <p className="font-semibold text-gray-800 mb-2">📤 Your Output:</p>
+                            <pre className="bg-gray-100 text-gray-800 p-3 rounded font-mono text-sm overflow-x-auto min-h-[60px]">
+                              {feedback.actualOutput || '(No output)'}
+                            </pre>
+                          </div>
+                          <div className="bg-white p-4 rounded-lg border-2 border-green-300">
+                            <p className="font-semibold text-gray-800 mb-2">✅ Expected Output:</p>
+                            <pre className="bg-gray-100 text-gray-800 p-3 rounded font-mono text-sm overflow-x-auto min-h-[60px]">
+                              {feedback.expectedOutput}
+                            </pre>
+                          </div>
+                        </div>
+                        
+                        {!feedback.correct && (
+                          <>
+                            <div className="bg-white p-4 rounded-lg mb-3">
+                              <p className="font-semibold text-gray-800 mb-2">💡 Expected Solution:</p>
+                              <pre className="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm overflow-x-auto">
+                                {feedback.expected}
+                              </pre>
+                            </div>
+                            <div className="bg-blue-100 p-4 rounded-lg">
+                              <p className="font-semibold text-gray-800 mb-1">📖 Explanation:</p>
+                              <p className="text-gray-700 text-sm">{feedback.explanation}</p>
+                            </div>
+                          </>
+                        )}
+
+                        {feedback.correct && currentLevel < levels.length - 1 && (
+                          <button
+                            onClick={() => setCurrentLevel(currentLevel + 1)}
+                            className="mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+                          >
+                            Next Level →
+                          </button>
+                        )}
+
+                        {feedback.correct && currentLevel === levels.length - 1 && (
+                          <div className="mt-4 text-center">
+                            <p className="text-xl font-bold text-green-800">🎉 Congratulations!</p>
+                            <p className="text-gray-700">You've completed all levels!</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Level Selector Sidebar */}
+                  <div className="lg:col-span-1">
+                    <div className="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">Levels</h3>
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {levels.map((level) => {
+                          const isUnlocked = level.id === 0 || completedLevels.includes(level.id - 1);
+                          const isCompleted = completedLevels.includes(level.id);
+                          const isCurrent = currentLevel === level.id;
+
+                          return (
+                            <button
+                              key={level.id}
+                              onClick={() => handleLevelChange(level.id)}
+                              disabled={!isUnlocked}
+                              className={`w-full text-left p-3 rounded-lg transition-all ${
+                                isCurrent
+                                  ? 'bg-blue-600 text-white shadow-md'
+                                  : isCompleted
+                                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                  : isUnlocked
+                                  ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  {isCompleted ? (
+                                    <CheckCircle />
+                                  ) : isUnlocked ? (
+                                    <Circle />
+                                  ) : (
+                                    <Lock />
+                                  )}
+                                  <span className="font-semibold">{level.id + 1}. {level.title}</span>
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        ReactDOM.render(<PyLingo />, document.getElementById('root'));
+    </script>
+</body>
+</html>
